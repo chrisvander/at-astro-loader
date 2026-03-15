@@ -1,0 +1,20 @@
+{
+  "languages": {
+    "JSON": {
+      "language_servers": ["vtsls", "oxfmt", "json-language-server"],
+      "formatter": "language_server"
+    },
+    "JSONC": {
+      "language_servers": ["vtsls", "oxfmt", "json-language-server"],
+      "formatter": "language_server"
+    },
+    "JavaScript": {
+      "language_servers": ["vtsls", "oxfmt"],
+      "formatter": "language_server"
+    },
+    "TypeScript": {
+      "language_servers": ["vtsls", "oxfmt"],
+      "formatter": "language_server"
+    }
+  }
+}
