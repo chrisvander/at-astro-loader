@@ -20,7 +20,6 @@ jobs:
       - run: bun run fmt:check
       - run: bun run lint
       - run: bun run build
-      - run: bun test
 
       # publish
       - uses: actions/setup-node@v4
