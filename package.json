@@ -1,7 +1,20 @@
 {
   "name": "at-astro-loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
+  "description": "An Astro content loader for records on ATProto.",
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "astro-loader",
+    "atproto",
+    "atprotocol",
+    "bluesky",
+    "content-collections",
+    "withastro"
+  ],
+  "homepage": "https://chrisvanderloo.com",
+  "repository": "git+https://github.com/chrisvander/at-astro-loader.git",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
