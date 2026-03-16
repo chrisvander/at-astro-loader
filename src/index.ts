@@ -29,7 +29,7 @@ type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
 /** Filter passed to {@link atLiveLoader} `loadCollection`, forwarded to `client.list()`. */
 type ATLoaderCollectionFilter = ListOptions;
 /** Error type returned by live loader methods and thrown by the static loader. */
-class ATLoaderError extends Error { }
+class ATLoaderError extends Error {}
 
 async function getClient(configClient?: Client, endpoint?: string): Promise<Client> {
   return (
@@ -42,7 +42,7 @@ async function getClient(configClient?: Client, endpoint?: string): Promise<Clie
 
 /** Get a Zod schema for the given ATProto record schema. */
 export function atZodSchema<T extends RecordSchema>(ns: T | { main: T }) {
-  return custom<Infer<T>>((d) => getMain(ns).safeParse(d).success)
+  return custom<Infer<T>>((d) => getMain(ns).safeParse(d).success);
 }
 
 /**
@@ -70,11 +70,11 @@ export function atZodSchema<T extends RecordSchema>(ns: T | { main: T }) {
 export function atLiveLoader<const T extends RecordSchema>(
   ns: { main: T },
   config: ATLoaderConfig,
-): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>
+): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T,
   config: ATLoaderConfig,
-): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>
+): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T | { main: T },
   { client: configClient, endpoint, ...options }: ATLoaderConfig = {},
