@@ -1,4 +1,4 @@
-import type { Loader, LiveLoader } from "astro/loaders";
+import type { Loader, LiveLoader, LoaderContext } from "astro/loaders";
 import type {
   Client,
   Infer,
@@ -7,8 +7,9 @@ import type {
   AtIdentifierString,
   CallOptions,
   RecordSchema,
+  Validator,
 } from "@atproto/lex";
-import { custom } from "zod/mini";
+import { custom, ZodMiniCustom } from "zod/mini";
 
 function getMain<T extends object>(ns: T | { main: T }): T {
   return "main" in ns ? ns.main : ns;
@@ -29,7 +30,7 @@ type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
 /** Filter passed to {@link atLiveLoader} `loadCollection`, forwarded to `client.list()`. */
 type ATLoaderCollectionFilter = ListOptions;
 /** Error type returned by live loader methods and thrown by the static loader. */
-class ATLoaderError extends Error {}
+class ATLoaderError extends Error { }
 
 async function getClient(configClient?: Client, endpoint?: string): Promise<Client> {
   return (
@@ -103,6 +104,12 @@ export function atLiveLoader<const T extends RecordSchema>(
   };
 }
 
+type ATLoader<T extends Validator> = {
+  name: string;
+  schema: ZodMiniCustom<Infer<T>, Infer<T>>;
+  load: (ctx: LoaderContext) => Promise<void>;
+}
+
 /**
  * Creates a regular (non-live) Astro content loader backed by an ATProto record schema.
  *
@@ -127,9 +134,17 @@ export function atLiveLoader<const T extends RecordSchema>(
  * ```
  */
 export function atLoader<const T extends RecordSchema>(
+  ns: T,
+  client: ATLoaderConfig,
+): ATLoader<T>
+export function atLoader<const T extends RecordSchema>(
+  ns: { main: T },
+  client: ATLoaderConfig,
+): ATLoader<T>
+export function atLoader<const T extends RecordSchema>(
   ns: T | { main: T },
   { client: configClient, endpoint, ...options }: ATLoaderConfig = {},
-) {
+): ATLoader<T> {
   const schema: T = getMain(ns);
   return {
     name: `atproto-loader-${schema.$type}`,
