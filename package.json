@@ -13,7 +13,7 @@
     "content-collections",
     "withastro"
   ],
-  "homepage": "https://chrisvanderloo.com",
+  "homepage": "https://github.com/chrisvander/at-astro-loader",
   "repository": "git+https://github.com/chrisvander/at-astro-loader.git",
   "type": "module",
   "main": "dist/index.cjs",
