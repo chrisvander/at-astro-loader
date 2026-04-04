@@ -30,7 +30,10 @@ type SchemaMock = {
 };
 
 type StaticClientMock = {
-  list(passedSchema: ExampleSchema, options: { repo?: string }): Promise<{
+  list(
+    passedSchema: ExampleSchema,
+    options: { repo?: string },
+  ): Promise<{
     invalid: [];
     records: [{ cid: string; value: ExampleRecord }];
   }>;
@@ -47,10 +50,7 @@ type LiveClientMock = {
 
 function isExampleRecord(data: unknown): data is ExampleRecord {
   return (
-    typeof data === "object" &&
-    data !== null &&
-    "text" in data &&
-    typeof data.text === "string"
+    typeof data === "object" && data !== null && "text" in data && typeof data.text === "string"
   );
 }
 
@@ -113,29 +113,26 @@ describe("at-astro-loader", () => {
         keys() {
           return [];
         },
-        delete() { },
-        clear() { },
+        delete() {},
+        clear() {},
         has() {
           return false;
         },
-        addModuleImport() { },
+        addModuleImport() {},
       },
       meta: {
         get() {
           return undefined;
         },
-        set() { },
+        set() {},
         has() {
           return false;
         },
-        delete() { },
+        delete() {},
       },
       logger: {} as LoaderContext["logger"],
       config: {} as LoaderContext["config"],
-      async parseData<TData extends Record<string, unknown>>(entry: {
-        id: string;
-        data: TData;
-      }) {
+      async parseData<TData extends Record<string, unknown>>(entry: { id: string; data: TData }) {
         return { ...entry.data, parsed: true } as TData;
       },
       async renderMarkdown() {

@@ -16,7 +16,7 @@ function getMain<T extends object>(ns: T | { main: T }): T {
 }
 
 /** Configuration for {@link atLoader}. Includes all ATProto `ListOptions`. */
-interface ATLoaderConfig extends CallOptions {
+interface ATLoaderBaseConfig extends CallOptions {
   /** Repository identifier (DID or handle). Defaults to authenticated user's DID. */
   repo?: AtIdentifierString;
   /** Optional preconfigured ATProto client (for auth, custom headers, etc.). */
@@ -25,12 +25,25 @@ interface ATLoaderConfig extends CallOptions {
   endpoint?: string;
 }
 
+interface ATLiveLoaderConfig extends ATLoaderBaseConfig {}
+
+interface ATLoaderMarkdownConfig<T extends RecordSchema> {
+  /**
+   * If there is Markdown text in the schema, define this function and the loader
+   * will expose a render function to render it to HTML.
+   */
+  getMarkdown?: (data: Infer<T>) => string;
+}
+
+interface ATLoaderConfig<T extends RecordSchema>
+  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig {}
+
 /** Filter passed to {@link atLiveLoader} `loadEntry`, forwarded to `client.get()`. */
 type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
 /** Filter passed to {@link atLiveLoader} `loadCollection`, forwarded to `client.list()`. */
 type ATLoaderCollectionFilter = ListOptions;
 /** Error type returned by live loader methods and thrown by the static loader. */
-class ATLoaderError extends Error { }
+class ATLoaderError extends Error {}
 
 async function getClient(configClient?: Client, endpoint?: string): Promise<Client> {
   return (
@@ -70,15 +83,15 @@ export function atZodSchema<T extends RecordSchema>(ns: T | { main: T }) {
  */
 export function atLiveLoader<const T extends RecordSchema>(
   ns: { main: T },
-  config: ATLoaderConfig,
+  config: ATLiveLoaderConfig,
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T,
-  config: ATLoaderConfig,
+  config: ATLiveLoaderConfig,
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T | { main: T },
-  { client: configClient, endpoint, ...options }: ATLoaderConfig = {},
+  { client: configClient, endpoint, ...options }: ATLiveLoaderConfig = {},
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError> {
   const schema: T = getMain(ns);
   return {
@@ -90,7 +103,11 @@ export function atLiveLoader<const T extends RecordSchema>(
         ...(filter as ATLoaderEntryFilter<T>),
       });
       if (!cid) return { error: new ATLoaderError(`No CID found for record: ${uri}`) };
-      return { id: cid, data: value };
+      return {
+        id: cid,
+        data: value,
+        rendered: value.markdown ? { html: value.markdown() } : undefined,
+      };
     },
     loadCollection: async ({ filter }) => {
       const client = await getClient(configClient, endpoint);
@@ -108,7 +125,7 @@ type ATLoader<T extends Validator> = {
   name: string;
   schema: ZodMiniCustom<Infer<T>, Infer<T>>;
   load: (ctx: LoaderContext) => Promise<void>;
-}
+};
 
 /**
  * Creates a regular (non-live) Astro content loader backed by an ATProto record schema.
@@ -135,21 +152,21 @@ type ATLoader<T extends Validator> = {
  */
 export function atLoader<const T extends RecordSchema>(
   ns: T,
-  client: ATLoaderConfig,
-): ATLoader<T>
+  client: ATLoaderConfig<T>,
+): ATLoader<T>;
 export function atLoader<const T extends RecordSchema>(
   ns: { main: T },
-  client: ATLoaderConfig,
-): ATLoader<T>
+  client: ATLoaderConfig<T>,
+): ATLoader<T>;
 export function atLoader<const T extends RecordSchema>(
   ns: T | { main: T },
-  { client: configClient, endpoint, ...options }: ATLoaderConfig = {},
+  { client: configClient, endpoint, getMarkdown, ...options }: ATLoaderConfig<T> = {},
 ): ATLoader<T> {
   const schema: T = getMain(ns);
   return {
     name: `atproto-loader-${schema.$type}`,
     schema: atZodSchema(ns),
-    load: async ({ store, parseData, generateDigest }) => {
+    load: async ({ store, parseData, renderMarkdown, generateDigest }) => {
       store.clear();
 
       const client = await getClient(configClient, endpoint);
@@ -165,6 +182,7 @@ export function atLoader<const T extends RecordSchema>(
         store.set({
           id: record.cid,
           data,
+          rendered: getMarkdown ? await renderMarkdown(getMarkdown(data)) : undefined,
           digest: generateDigest(data),
         });
       }
