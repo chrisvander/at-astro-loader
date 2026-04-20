@@ -18,6 +18,10 @@
   "type": "module",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./lexicons": "./dist/lexicons.mjs"
+  },
   "scripts": {
     "build": "tsdown",
     "check": "tsgo",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import type { Client, RecordSchema } from "@atproto/lex";
 import type { LoaderContext } from "astro/loaders";
-import { atLoader, atLiveLoader, atZodSchema } from "./index.ts";
+import { atLoader, atLiveLoader, atZodSchema } from "./index";
 
 type ExampleRecord = {
   text: string;
@@ -113,22 +113,22 @@ describe("at-astro-loader", () => {
         keys() {
           return [];
         },
-        delete() {},
-        clear() {},
+        delete() { },
+        clear() { },
         has() {
           return false;
         },
-        addModuleImport() {},
+        addModuleImport() { },
       },
       meta: {
         get() {
           return undefined;
         },
-        set() {},
+        set() { },
         has() {
           return false;
         },
-        delete() {},
+        delete() { },
       },
       logger: {} as LoaderContext["logger"],
       config: {} as LoaderContext["config"],

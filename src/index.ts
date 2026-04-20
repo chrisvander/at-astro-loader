@@ -10,29 +10,13 @@ import {
   lexToJson,
 } from "@atproto/lex";
 import { custom, ZodMiniCustom } from "zod/mini";
-import type { MarkdownHeading } from "astro";
+import type { RendererFunction } from "./renderers/types";
+
+export * from "./renderers"
 
 function getMain<T extends object>(ns: T | { main: T }): T {
   return "main" in ns ? ns.main : ns;
 }
-
-// Duplicate from Astro, since it is non-exported.
-interface RenderedContent {
-  /** Rendered HTML string. If present then `render(entry)` will return a component that renders this HTML. */
-  html: string;
-  metadata?: {
-    /** Any images that are present in this entry. Relative to the {@link DataEntry} filePath. */
-    imagePaths?: Array<string>;
-    /** Any headings that are present in this file. */
-    headings?: MarkdownHeading[];
-    /** Raw frontmatter, parsed from the file. This may include data from remark plugins. */
-    frontmatter?: Record<string, any>;
-    /** Any other metadata that is present in this file. */
-    [key: string]: unknown;
-  };
-}
-
-export type RendererFunction<T> = (data: T) => RenderedContent
 
 /** Configuration for {@link atLoader}. Includes all ATProto `ListOptions`. */
 interface ATLoaderBaseConfig<T extends RecordSchema> {
@@ -78,6 +62,8 @@ type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
 type ATLoaderCollectionFilter = ListOptions;
 /** Error type returned by live loader methods and thrown by the static loader. */
 class ATLoaderError extends Error { }
+
+export type Schema<T> = T | { main: T }
 
 async function getClient(configClient?: Client, endpoint?: string): Promise<Client> {
   return (
