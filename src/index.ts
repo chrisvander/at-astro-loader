@@ -5,7 +5,6 @@ import type {
   ListOptions,
   GetOptions,
   AtIdentifierString,
-  CallOptions,
   RecordSchema,
   Validator,
 } from "@atproto/lex";
@@ -16,16 +15,22 @@ function getMain<T extends object>(ns: T | { main: T }): T {
 }
 
 /** Configuration for {@link atLoader}. Includes all ATProto `ListOptions`. */
-interface ATLoaderBaseConfig extends CallOptions {
+interface ATLoaderBaseConfig {
   /** Repository identifier (DID or handle). Defaults to authenticated user's DID. */
   repo?: AtIdentifierString;
   /** Optional preconfigured ATProto client (for auth, custom headers, etc.). */
   client?: Client;
   /** ATProto service endpoint. Defaults to `https://public.api.bsky.app`. */
   endpoint?: string;
+  /** Maximum number of records to return. */
+  limit?: number
+  /** Pagination cursor from a previous response. */
+  cursor?: string
+  /** If true, returns records in reverse chronological order. */
+  reverse?: boolean
 }
 
-interface ATLiveLoaderConfig extends ATLoaderBaseConfig {}
+interface ATLiveLoaderConfig extends ATLoaderBaseConfig { }
 
 interface ATLoaderMarkdownConfig<T extends RecordSchema> {
   /**
@@ -36,14 +41,14 @@ interface ATLoaderMarkdownConfig<T extends RecordSchema> {
 }
 
 interface ATLoaderConfig<T extends RecordSchema>
-  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig {}
+  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig { }
 
 /** Filter passed to {@link atLiveLoader} `loadEntry`, forwarded to `client.get()`. */
 type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
 /** Filter passed to {@link atLiveLoader} `loadCollection`, forwarded to `client.list()`. */
 type ATLoaderCollectionFilter = ListOptions;
 /** Error type returned by live loader methods and thrown by the static loader. */
-class ATLoaderError extends Error {}
+class ATLoaderError extends Error { }
 
 async function getClient(configClient?: Client, endpoint?: string): Promise<Client> {
   return (
@@ -106,7 +111,6 @@ export function atLiveLoader<const T extends RecordSchema>(
       return {
         id: cid,
         data: value,
-        rendered: value.markdown ? { html: value.markdown() } : undefined,
       };
     },
     loadCollection: async ({ filter }) => {
@@ -115,8 +119,8 @@ export function atLiveLoader<const T extends RecordSchema>(
       if (invalid.length > 0)
         return { error: new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`) };
       return {
-        entries: records.map((r) => ({ data: r.value, id: r.cid })),
-      };
+        entries: records.map((r) => ({ data: r.value as Infer<T>, id: r.cid })),
+      }
     },
   };
 }
