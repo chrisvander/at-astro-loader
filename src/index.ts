@@ -10,13 +10,32 @@ import {
   lexToJson,
 } from "@atproto/lex";
 import { custom, ZodMiniCustom } from "zod/mini";
+import type { MarkdownHeading } from "astro";
 
 function getMain<T extends object>(ns: T | { main: T }): T {
   return "main" in ns ? ns.main : ns;
 }
 
+// Duplicate from Astro, since it is non-exported.
+interface RenderedContent {
+  /** Rendered HTML string. If present then `render(entry)` will return a component that renders this HTML. */
+  html: string;
+  metadata?: {
+    /** Any images that are present in this entry. Relative to the {@link DataEntry} filePath. */
+    imagePaths?: Array<string>;
+    /** Any headings that are present in this file. */
+    headings?: MarkdownHeading[];
+    /** Raw frontmatter, parsed from the file. This may include data from remark plugins. */
+    frontmatter?: Record<string, any>;
+    /** Any other metadata that is present in this file. */
+    [key: string]: unknown;
+  };
+}
+
+export type RendererFunction<T> = (data: T) => RenderedContent
+
 /** Configuration for {@link atLoader}. Includes all ATProto `ListOptions`. */
-interface ATLoaderBaseConfig {
+interface ATLoaderBaseConfig<T extends RecordSchema> {
   /** Repository identifier (DID or handle). Defaults to authenticated user's DID. */
   repo?: AtIdentifierString;
   /** Optional preconfigured ATProto client (for auth, custom headers, etc.). */
@@ -29,20 +48,29 @@ interface ATLoaderBaseConfig {
   cursor?: string
   /** If true, returns records in reverse chronological order. */
   reverse?: boolean
+  /**
+   * A renderer function that will be called with the data. If defined, it will
+   * transform the content being retrieved and will provide the `render()` function
+   * and the `<Content />` component to be used.
+   */
+  renderer?: RendererFunction<Infer<T>>
 }
 
-interface ATLiveLoaderConfig extends ATLoaderBaseConfig { }
+interface ATLiveLoaderConfig<T extends RecordSchema> extends ATLoaderBaseConfig<T> { }
 
 interface ATLoaderMarkdownConfig<T extends RecordSchema> {
   /**
    * If there is Markdown text in the schema, define this function and the loader
    * will expose a render function to render it to HTML.
+   *
+   * **Note**: if `renderer` is defined, it will take precedent, and Markdown will not
+   * be rendered.
    */
   getMarkdown?: (data: Infer<T>) => string;
 }
 
 interface ATLoaderConfig<T extends RecordSchema>
-  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig { }
+  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig<T> { }
 
 /** Filter passed to {@link atLiveLoader} `loadEntry`, forwarded to `client.get()`. */
 type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
@@ -89,15 +117,15 @@ export function atZodSchema<T extends RecordSchema>(ns: T | { main: T }) {
  */
 export function atLiveLoader<const T extends RecordSchema>(
   ns: { main: T },
-  config: ATLiveLoaderConfig,
+  config: ATLiveLoaderConfig<T>,
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T,
-  config: ATLiveLoaderConfig,
+  config: ATLiveLoaderConfig<T>,
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T | { main: T },
-  { client: configClient, endpoint, ...options }: ATLiveLoaderConfig = {},
+  { client: configClient, endpoint, ...options }: ATLiveLoaderConfig<T> = {},
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError> {
   const schema: T = getMain(ns);
   return {
