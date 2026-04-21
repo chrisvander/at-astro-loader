@@ -1,0 +1,220 @@
+{
+  "id": "app.offprint.theme",
+  "defs": {
+    "main": {
+      "type": "object",
+      "required": [
+        "colorScheme",
+        "colors"
+      ],
+      "properties": {
+        "colors": {
+          "ref": "#colors",
+          "type": "ref",
+          "required": true,
+          "description": "Full color palette for the theme."
+        },
+        "sizing": {
+          "ref": "#sizing",
+          "type": "ref",
+          "description": "Border radius, component sizing, and border width values."
+        },
+        "effects": {
+          "ref": "#effects",
+          "type": "ref",
+          "description": "Visual effects like depth shadows and noise texture."
+        },
+        "typography": {
+          "ref": "#typography",
+          "type": "ref",
+          "description": "Font configuration for headings and body text."
+        },
+        "colorScheme": {
+          "enum": [
+            "light",
+            "dark"
+          ],
+          "type": "string",
+          "required": true,
+          "description": "Whether the theme is light or dark."
+        }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "required": [
+        "base100",
+        "base200",
+        "base300",
+        "baseContent",
+        "primary",
+        "primaryContent"
+      ],
+      "properties": {
+        "info": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Informational status color."
+        },
+        "error": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Error status color."
+        },
+        "accent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Accent color for highlights and emphasis."
+        },
+        "base100": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "required": true,
+          "description": "Primary background color."
+        },
+        "base200": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "required": true,
+          "description": "Secondary background color (e.g. cards, sidebars)."
+        },
+        "base300": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "required": true,
+          "description": "Tertiary background color (e.g. borders, dividers)."
+        },
+        "neutral": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Neutral color for muted UI elements."
+        },
+        "primary": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "required": true,
+          "description": "Primary action color (buttons, links)."
+        },
+        "success": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Success status color."
+        },
+        "warning": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Warning status color."
+        },
+        "secondary": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Secondary action color."
+        },
+        "baseContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "required": true,
+          "description": "Default text color on base backgrounds."
+        },
+        "infoContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on info backgrounds."
+        },
+        "errorContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on error backgrounds."
+        },
+        "accentContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on accent backgrounds."
+        },
+        "neutralContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on neutral backgrounds."
+        },
+        "primaryContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "required": true,
+          "description": "Text color on primary backgrounds."
+        },
+        "successContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on success backgrounds."
+        },
+        "warningContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on warning backgrounds."
+        },
+        "secondaryContent": {
+          "ref": "site.standard.theme.color#rgb",
+          "type": "ref",
+          "description": "Text color on secondary backgrounds."
+        }
+      }
+    },
+    "sizing": {
+      "type": "object",
+      "properties": {
+        "border": {
+          "type": "string",
+          "description": "Default border width (e.g. \"1px\")."
+        },
+        "radiusBox": {
+          "type": "string",
+          "description": "Border radius for cards and containers (e.g. \"1rem\")."
+        },
+        "sizeField": {
+          "type": "string",
+          "description": "Height for input fields (e.g. \"0.25rem\")."
+        },
+        "radiusField": {
+          "type": "string",
+          "description": "Border radius for input fields (e.g. \"0.5rem\")."
+        },
+        "sizeSelector": {
+          "type": "string",
+          "description": "Height for small interactive elements (e.g. \"0.25rem\")."
+        },
+        "radiusSelector": {
+          "type": "string",
+          "description": "Border radius for small interactive elements (e.g. \"0.5rem\")."
+        }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "properties": {
+        "depth": {
+          "type": "boolean",
+          "description": "Whether to show depth shadows on elevated elements."
+        },
+        "noise": {
+          "type": "boolean",
+          "description": "Whether to apply a noise texture to backgrounds."
+        }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "bodyFont": {
+          "type": "string",
+          "description": "Font slug for body text (e.g. \"inter\")."
+        },
+        "headingFont": {
+          "type": "string",
+          "description": "Font slug for headings (e.g. \"playfair-display\")."
+        }
+      }
+    }
+  },
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1
+}

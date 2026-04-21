@@ -1,0 +1,25 @@
+{
+  "id": "app.offprint.publication",
+  "defs": {
+    "main": {
+      "key": "tid",
+      "type": "record",
+      "record": {
+        "type": "object",
+        "required": [
+          "publication"
+        ],
+        "properties": {
+          "publication": {
+            "type": "string",
+            "format": "at-uri",
+            "required": true,
+            "description": "Required AT-URI to a `site.standard.publication` compatible record."
+          }
+        }
+      }
+    }
+  },
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1
+}

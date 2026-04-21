@@ -1,0 +1,31 @@
+{
+  "id": "app.offprint.block.button",
+  "defs": {
+    "main": {
+      "type": "object",
+      "required": [
+        "text",
+        "href"
+      ],
+      "properties": {
+        "href": {
+          "type": "string",
+          "format": "uri",
+          "required": true,
+          "description": "The URL the button links to"
+        },
+        "text": {
+          "type": "string",
+          "required": true,
+          "description": "The button label text"
+        },
+        "caption": {
+          "type": "string",
+          "description": "Optional caption text displayed above the button"
+        }
+      }
+    }
+  },
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1
+}
