@@ -5,8 +5,6 @@
     "": {
       "name": "at-astro-loader",
       "dependencies": {
-        "@atproto/lex": "^0.0.25",
-        "@atproto/lex-client": "^0.0.20",
         "zod": "^4.3.6",
       },
       "devDependencies": {
@@ -20,6 +18,7 @@
         "vite-plugin-dts": "^4.5.4",
       },
       "peerDependencies": {
+        "@atproto/lex": "^0.0.25",
         "astro": "^6.1.8",
       },
     },
