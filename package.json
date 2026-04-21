@@ -16,11 +16,10 @@
   "homepage": "https://github.com/chrisvander/at-astro-loader",
   "repository": "git+https://github.com/chrisvander/at-astro-loader.git",
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "vite build && tsgo -p tsconfig.build.json",
+    "build": "tsdown",
     "check": "tsgo",
     "test": "bun test",
     "fmt": "oxfmt",
@@ -36,9 +35,8 @@
     "@typescript/native-preview": "^7.0.0-dev.20260420.1",
     "oxfmt": "^0.46.0",
     "oxlint": "^1.61.0",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.9",
-    "vite-bundle-analyzer": "^1.3.7"
+    "tsdown": "^0.21.9",
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "astro": "^6.1.8",
