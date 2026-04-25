@@ -34,6 +34,7 @@
     "postinstall": "bun gen"
   },
   "dependencies": {
+    "slugify": "^1.6.9",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -47,7 +48,7 @@
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "astro": "^6.1.8",
-    "@atproto/lex": "^0.0.25"
+    "@atproto/lex": "^0.0.25",
+    "astro": "^6.1.8"
   }
 }

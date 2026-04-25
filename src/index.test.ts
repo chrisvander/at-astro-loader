@@ -1,57 +1,57 @@
-import { describe, expect, it } from "bun:test";
-import type { Client, RecordSchema } from "@atproto/lex";
-import type { LoaderContext } from "astro/loaders";
-import { atLoader, atLiveLoader, atZodSchema } from "./index";
+import { describe, expect, it } from "bun:test"
+import type { Client, RecordSchema } from "@atproto/lex"
+import type { LoaderContext } from "astro/loaders"
+import { atLoader, atLiveLoader, atZodSchema } from "./index"
 
 type ExampleRecord = {
-  text: string;
-};
+  text: string
+}
 
 type ParsedRecord = ExampleRecord & {
-  parsed: true;
-};
+  parsed: true
+}
 
-type ExampleSchema = RecordSchema<any, any, any>;
+type ExampleSchema = RecordSchema<any, any, any>
 
 type StaticListCall = {
-  passedSchema: ExampleSchema;
-  options: { repo?: string };
-};
+  passedSchema: ExampleSchema
+  options: { repo?: string }
+}
 
 type StoreEntry = {
-  id: string;
-  data: ParsedRecord;
-  digest: string;
-};
+  id: string
+  data: ParsedRecord
+  digest: string
+}
 
 type SchemaMock = {
-  $type: string;
-  safeParse(data: unknown): { success: boolean };
-};
+  $type: string
+  safeParse(data: unknown): { success: boolean }
+}
 
 type StaticClientMock = {
   list(
     passedSchema: ExampleSchema,
     options: { repo?: string },
   ): Promise<{
-    invalid: [];
-    records: [{ cid: string; value: ExampleRecord }];
-  }>;
-};
+    invalid: []
+    records: [{ cid: string; value: ExampleRecord }]
+  }>
+}
 
 type LiveClientMock = {
   get(): Promise<{
-    uri: string;
-    value: ExampleRecord;
-    cid: string;
-  }>;
-  list(): Promise<{ invalid: []; records: [] }>;
-};
+    uri: string
+    value: ExampleRecord
+    cid: string
+  }>
+  list(): Promise<{ invalid: []; records: [] }>
+}
 
 function isExampleRecord(data: unknown): data is ExampleRecord {
   return (
     typeof data === "object" && data !== null && "text" in data && typeof data.text === "string"
-  );
+  )
 }
 
 function createSchema(): ExampleSchema {
@@ -60,131 +60,131 @@ function createSchema(): ExampleSchema {
     safeParse(data: unknown) {
       return {
         success: isExampleRecord(data),
-      };
+      }
     },
-  } satisfies SchemaMock;
+  } satisfies SchemaMock
 
-  return schema as unknown as ExampleSchema;
+  return schema as unknown as ExampleSchema
 }
 
 describe("at-astro-loader", () => {
   it("creates a zod schema from a wrapped lexicon namespace", () => {
-    const schema = atZodSchema({ main: createSchema() });
+    const schema = atZodSchema({ main: createSchema() })
 
-    expect(schema.safeParse({ text: "hello" }).success).toBe(true);
-    expect(schema.safeParse({ nope: true }).success).toBe(false);
-  });
+    expect(schema.safeParse({ text: "hello" }).success).toBe(true)
+    expect(schema.safeParse({ nope: true }).success).toBe(false)
+  })
 
   it("loads records into the static Astro store", async () => {
-    const listCalls: StaticListCall[] = [];
-    const storeEntries: StoreEntry[] = [];
-    const schema = createSchema();
+    const listCalls: StaticListCall[] = []
+    const storeEntries: StoreEntry[] = []
+    const schema = createSchema()
     const client = {
       async list(passedSchema: ExampleSchema, options: { repo?: string }) {
-        listCalls.push({ passedSchema, options });
+        listCalls.push({ passedSchema, options })
         return {
           invalid: [],
           records: [{ cid: "bafy-record", value: { text: "hello" } }],
-        };
+        }
       },
-    } satisfies StaticClientMock;
+    } satisfies StaticClientMock
 
     const loader = atLoader(schema, {
       client: client as unknown as Client,
       repo: "alice.test",
-    });
+    })
 
     const context = {
       collection: "posts",
       store: {
         get() {
-          return undefined;
+          return undefined
         },
         entries() {
-          return [];
+          return []
         },
         set(entry) {
-          storeEntries.push(entry as unknown as StoreEntry);
-          return true;
+          storeEntries.push(entry as unknown as StoreEntry)
+          return true
         },
         values() {
-          return [];
+          return []
         },
         keys() {
-          return [];
+          return []
         },
-        delete() { },
-        clear() { },
+        delete() {},
+        clear() {},
         has() {
-          return false;
+          return false
         },
-        addModuleImport() { },
+        addModuleImport() {},
       },
       meta: {
         get() {
-          return undefined;
+          return undefined
         },
-        set() { },
+        set() {},
         has() {
-          return false;
+          return false
         },
-        delete() { },
+        delete() {},
       },
       logger: {} as LoaderContext["logger"],
       config: {} as LoaderContext["config"],
       async parseData<TData extends Record<string, unknown>>(entry: { id: string; data: TData }) {
-        return { ...entry.data, parsed: true } as TData;
+        return { ...entry.data, parsed: true } as TData
       },
       async renderMarkdown() {
-        throw new Error("renderMarkdown should not be called in this test");
+        throw new Error("renderMarkdown should not be called in this test")
       },
       generateDigest(data) {
-        return `digest:${String((data as ExampleRecord).text)}`;
+        return `digest:${String((data as ExampleRecord).text)}`
       },
-    } satisfies LoaderContext;
+    } satisfies LoaderContext
 
-    await loader.load(context);
+    await loader.load(context)
 
     expect(listCalls).toEqual([
       {
         passedSchema: schema,
         options: { repo: "alice.test" },
       },
-    ]);
+    ])
     expect(storeEntries).toEqual([
       {
         id: "bafy-record",
         data: { text: "hello", parsed: true },
         digest: "digest:hello",
       },
-    ]);
-  });
+    ])
+  })
 
   it("returns a live loader error when get() produces no cid", async () => {
-    const schema = createSchema();
+    const schema = createSchema()
     const client = {
       async get() {
         return {
           uri: "at://did:plc:alice/com.example.record/123",
           value: { text: "hello" },
           cid: "",
-        };
+        }
       },
       async list() {
-        return { invalid: [], records: [] };
+        return { invalid: [], records: [] }
       },
-    } satisfies LiveClientMock;
+    } satisfies LiveClientMock
 
-    const loader = atLiveLoader(schema, { client: client as unknown as Client });
+    const loader = atLiveLoader(schema, { client: client as unknown as Client })
     const result = await loader.loadEntry({
       collection: "posts",
       filter: { rkey: "123" },
-    });
+    })
 
-    expect(result).toBeDefined();
-    if (!result || !("error" in result)) throw new Error("Expected a live loader error");
+    expect(result).toBeDefined()
+    if (!result || !("error" in result)) throw new Error("Expected a live loader error")
 
-    expect(result.error).toBeInstanceOf(Error);
-    expect(result.error.message).toContain("No CID found");
-  });
-});
+    expect(result.error).toBeInstanceOf(Error)
+    expect(result.error.message).toContain("No CID found")
+  })
+})

@@ -1,4 +1,4 @@
-import type { Loader, LiveLoader, LoaderContext } from "astro/loaders";
+import type { Loader, LiveLoader, LoaderContext } from "astro/loaders"
 import {
   type Client,
   type Infer,
@@ -8,24 +8,24 @@ import {
   type RecordSchema,
   type Validator,
   lexToJson,
-} from "@atproto/lex";
-import { custom, ZodMiniCustom } from "zod/mini";
-import type { RendererFunction } from "./renderers/types";
+} from "@atproto/lex"
+import { custom, ZodMiniCustom } from "zod/mini"
+import type { RendererFunction } from "./renderers/types"
 
 export * from "./renderers"
 
 function getMain<T extends object>(ns: T | { main: T }): T {
-  return "main" in ns ? ns.main : ns;
+  return "main" in ns ? ns.main : ns
 }
 
 /** Configuration for {@link atLoader}. Includes all ATProto `ListOptions`. */
 interface ATLoaderBaseConfig<T extends RecordSchema> {
   /** Repository identifier (DID or handle). Defaults to authenticated user's DID. */
-  repo?: AtIdentifierString;
+  repo?: AtIdentifierString
   /** Optional preconfigured ATProto client (for auth, custom headers, etc.). */
-  client?: Client;
+  client?: Client
   /** ATProto service endpoint. Defaults to `https://public.api.bsky.app`. */
-  endpoint?: string;
+  endpoint?: string
   /** Maximum number of records to return. */
   limit?: number
   /** Pagination cursor from a previous response. */
@@ -40,7 +40,7 @@ interface ATLoaderBaseConfig<T extends RecordSchema> {
   renderer?: RendererFunction<Infer<T>>
 }
 
-interface ATLiveLoaderConfig<T extends RecordSchema> extends ATLoaderBaseConfig<T> { }
+interface ATLiveLoaderConfig<T extends RecordSchema> extends ATLoaderBaseConfig<T> {}
 
 interface ATLoaderMarkdownConfig<T extends RecordSchema> {
   /**
@@ -50,18 +50,18 @@ interface ATLoaderMarkdownConfig<T extends RecordSchema> {
    * **Note**: if `renderer` is defined, it will take precedent, and Markdown will not
    * be rendered.
    */
-  getMarkdown?: (data: Infer<T>) => string;
+  getMarkdown?: (data: Infer<T>) => string
 }
 
 interface ATLoaderConfig<T extends RecordSchema>
-  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig<T> { }
+  extends ATLoaderMarkdownConfig<T>, ATLoaderBaseConfig<T> {}
 
 /** Filter passed to {@link atLiveLoader} `loadEntry`, forwarded to `client.get()`. */
-type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>;
+type ATLoaderEntryFilter<T extends RecordSchema> = GetOptions<T>
 /** Filter passed to {@link atLiveLoader} `loadCollection`, forwarded to `client.list()`. */
-type ATLoaderCollectionFilter = ListOptions;
+type ATLoaderCollectionFilter = ListOptions
 /** Error type returned by live loader methods and thrown by the static loader. */
-class ATLoaderError extends Error { }
+class ATLoaderError extends Error {}
 
 export type Schema<T> = T | { main: T }
 
@@ -71,12 +71,12 @@ async function getClient(configClient?: Client, endpoint?: string): Promise<Clie
     (await import("@atproto/lex").then(
       (m) => new m.Client(endpoint ?? "https://public.api.bsky.app"),
     ))
-  );
+  )
 }
 
 /** Get a Zod schema for the given ATProto record schema. */
 export function atZodSchema<T extends RecordSchema>(ns: T | { main: T }) {
-  return custom<Infer<T>>((d) => getMain(ns).safeParse(d).success);
+  return custom<Infer<T>>((d) => getMain(ns).safeParse(d).success)
 }
 
 /**
@@ -104,47 +104,47 @@ export function atZodSchema<T extends RecordSchema>(ns: T | { main: T }) {
 export function atLiveLoader<const T extends RecordSchema>(
   ns: { main: T },
   config: ATLiveLoaderConfig<T>,
-): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
+): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T,
   config: ATLiveLoaderConfig<T>,
-): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>;
+): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError>
 export function atLiveLoader<const T extends RecordSchema>(
   ns: T | { main: T },
   { client: configClient, endpoint, ...options }: ATLiveLoaderConfig<T> = {},
 ): LiveLoader<Infer<T>, ATLoaderEntryFilter<T>, ATLoaderCollectionFilter, ATLoaderError> {
-  const schema: T = getMain(ns);
+  const schema: T = getMain(ns)
   return {
     name: `atproto-live-loader-${schema.$type}`,
     loadEntry: async ({ filter }) => {
-      const client = await getClient(configClient, endpoint);
+      const client = await getClient(configClient, endpoint)
       const { uri, value, cid } = await client.get(schema, {
         ...options,
         ...(filter as ATLoaderEntryFilter<T>),
-      });
-      if (!cid) return { error: new ATLoaderError(`No CID found for record: ${uri}`) };
+      })
+      if (!cid) return { error: new ATLoaderError(`No CID found for record: ${uri}`) }
       return {
         id: cid,
         data: lexToJson(value) as Infer<T>,
-      };
+      }
     },
     loadCollection: async ({ filter }) => {
-      const client = await getClient(configClient, endpoint);
-      const { invalid, records } = await client.list(schema, { ...options, ...filter });
+      const client = await getClient(configClient, endpoint)
+      const { invalid, records } = await client.list(schema, { ...options, ...filter })
       if (invalid.length > 0)
-        return { error: new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`) };
+        return { error: new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`) }
       return {
         entries: records.map((r) => ({ data: lexToJson(r.value) as Infer<T>, id: r.cid })),
       }
     },
-  };
+  }
 }
 
 type ATLoader<T extends Validator> = {
-  name: string;
-  schema: ZodMiniCustom<Infer<T>, Infer<T>>;
-  load: (ctx: LoaderContext) => Promise<void>;
-};
+  name: string
+  schema: ZodMiniCustom<Infer<T>, Infer<T>>
+  load: (ctx: LoaderContext) => Promise<void>
+}
 
 /**
  * Creates a regular (non-live) Astro content loader backed by an ATProto record schema.
@@ -172,39 +172,42 @@ type ATLoader<T extends Validator> = {
 export function atLoader<const T extends RecordSchema>(
   ns: T,
   client: ATLoaderConfig<T>,
-): ATLoader<T>;
+): ATLoader<T>
 export function atLoader<const T extends RecordSchema>(
   ns: { main: T },
   client: ATLoaderConfig<T>,
-): ATLoader<T>;
+): ATLoader<T>
 export function atLoader<const T extends RecordSchema>(
   ns: T | { main: T },
-  { client: configClient, endpoint, getMarkdown, ...options }: ATLoaderConfig<T> = {},
+  { client: configClient, endpoint, getMarkdown, renderer, ...options }: ATLoaderConfig<T> = {},
 ): ATLoader<T> {
-  const schema: T = getMain(ns);
+  const schema: T = getMain(ns)
   return {
     name: `atproto-loader-${schema.$type}`,
     schema: atZodSchema(ns),
     load: async ({ store, parseData, renderMarkdown, generateDigest }) => {
-      store.clear();
+      store.clear()
 
-      const client = await getClient(configClient, endpoint);
-      const { invalid, records } = await client.list(schema, options);
-      if (invalid.length > 0)
-        throw new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`);
+      const client = await getClient(configClient, endpoint)
+      const { invalid, records } = await client.list(schema, options)
+      if (invalid.length > 0) throw new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`)
 
       for (const record of records) {
         const data = await parseData<Infer<T>>({
           id: record.cid,
           data: lexToJson(record.value) as Infer<T>,
-        });
+        })
         store.set({
           id: record.cid,
           data,
-          rendered: getMarkdown ? await renderMarkdown(getMarkdown(data)) : undefined,
+          rendered: renderer
+            ? await renderer(data)
+            : getMarkdown
+              ? await renderMarkdown(getMarkdown(data))
+              : undefined,
           digest: generateDigest(data),
-        });
+        })
       }
     },
-  } satisfies Loader;
+  } satisfies Loader
 }
