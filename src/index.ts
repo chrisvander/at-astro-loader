@@ -1,12 +1,13 @@
 import type { Loader, LiveLoader, LoaderContext } from "astro/loaders";
-import type {
-  Client,
-  Infer,
-  ListOptions,
-  GetOptions,
-  AtIdentifierString,
-  RecordSchema,
-  Validator,
+import {
+  type Client,
+  type Infer,
+  type ListOptions,
+  type GetOptions,
+  type AtIdentifierString,
+  type RecordSchema,
+  type Validator,
+  lexToJson,
 } from "@atproto/lex";
 import { custom, ZodMiniCustom } from "zod/mini";
 
@@ -110,7 +111,7 @@ export function atLiveLoader<const T extends RecordSchema>(
       if (!cid) return { error: new ATLoaderError(`No CID found for record: ${uri}`) };
       return {
         id: cid,
-        data: value,
+        data: lexToJson(value) as Infer<T>,
       };
     },
     loadCollection: async ({ filter }) => {
@@ -119,7 +120,7 @@ export function atLiveLoader<const T extends RecordSchema>(
       if (invalid.length > 0)
         return { error: new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`) };
       return {
-        entries: records.map((r) => ({ data: r.value as Infer<T>, id: r.cid })),
+        entries: records.map((r) => ({ data: lexToJson(r.value) as Infer<T>, id: r.cid })),
       }
     },
   };
@@ -181,7 +182,7 @@ export function atLoader<const T extends RecordSchema>(
       for (const record of records) {
         const data = await parseData<Infer<T>>({
           id: record.cid,
-          data: record.value,
+          data: lexToJson(record.value) as Infer<T>,
         });
         store.set({
           id: record.cid,

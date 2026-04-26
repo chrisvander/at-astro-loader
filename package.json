@@ -31,6 +31,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@atproto/lex-json": "^0.0.16",
     "@types/bun": "^1.3.12",
     "@typescript/native-preview": "^7.0.0-dev.20260420.1",
     "oxfmt": "^0.46.0",
