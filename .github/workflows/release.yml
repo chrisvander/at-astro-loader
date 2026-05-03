@@ -16,14 +16,15 @@ jobs:
       # install, build, lint, fmt, test
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+
       - run: bun install --frozen-lockfile
       - run: bun run fmt:check
       - run: bun run lint
       - run: bun run build
 
       # publish
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org/
       - run: npm publish --access public
