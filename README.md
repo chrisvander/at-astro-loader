@@ -34,9 +34,9 @@ This typically generates modules under `src/lexicons` (or your configured output
 ## Quick start
 
 ```ts
-import { defineCollection } from "astro:content";
-import { atLoader } from "at-astro-loader";
-import * as app from "../src/lexicons/app";
+import { defineCollection } from "astro:content"
+import { atLoader } from "at-astro-loader"
+import * as app from "../src/lexicons/app"
 
 export const collections = {
   posts: defineCollection({
@@ -47,7 +47,7 @@ export const collections = {
       reverse: true,
     }),
   }),
-};
+}
 ```
 
 ## API
@@ -65,9 +65,9 @@ Creates a regular Astro content loader (`Loader`) that fetches records via `clie
 Example:
 
 ```ts
-import { defineCollection } from "astro:content";
-import { atLoader } from "at-astro-loader";
-import * as app from "../src/lexicons/app";
+import { defineCollection } from "astro:content"
+import { atLoader } from "at-astro-loader"
+import * as app from "../src/lexicons/app"
 
 const posts = defineCollection({
   loader: atLoader(app.bsky.feed.post, {
@@ -75,7 +75,7 @@ const posts = defineCollection({
     limit: 100,
     reverse: true,
   }),
-});
+})
 ```
 
 ### `atLiveLoader(ns, config?)`
@@ -90,16 +90,16 @@ Creates an Astro `LiveLoader` backed by an ATProto record schema.
 Example:
 
 ```ts
-import { defineCollection } from "astro:content";
-import { atLiveLoader } from "at-astro-loader";
-import * as app from "../src/lexicons/app";
+import { defineCollection } from "astro:content"
+import { atLiveLoader } from "at-astro-loader"
+import * as app from "../src/lexicons/app"
 
 const posts = defineCollection({
   loader: atLiveLoader(app.bsky.feed.post, {
     repo: "myhandle.com",
     endpoint: "https://public.api.bsky.app",
   }),
-});
+})
 ```
 
 ### `atZodSchema(ns)`
@@ -107,10 +107,10 @@ const posts = defineCollection({
 Builds a Zod schema using the lexicon schema `safeParse`, useful when you need schema reuse outside `atLoader`.
 
 ```ts
-import { atZodSchema } from "at-astro-loader";
-import * as app from "../src/lexicons/app";
+import { atZodSchema } from "at-astro-loader"
+import * as app from "../src/lexicons/app"
 
-const postSchema = atZodSchema(app.bsky.feed.post);
+const postSchema = atZodSchema(app.bsky.feed.post)
 ```
 
 ## Config (`ATLoaderConfig`)
