@@ -186,6 +186,10 @@ function imageGridAspectRatioStyle(aspectRatio?: "landscape" | "portrait" | "squ
       return "aspect-ratio:3/4"
     case "square":
       return "aspect-ratio:1/1"
+    case "mosaic":
+      return "aspect-ratio:4/3"
+    case undefined:
+      return "aspect-ratio:4/3"
     default:
       return "aspect-ratio:4/3"
   }
@@ -201,7 +205,9 @@ function renderGridImages(images: ImageLike[], opts: StandardSiteDocumentRendere
         "width:100%",
         "height:100%",
         "object-fit:cover",
-        image.aspectRatio ? `aspect-ratio:${image.aspectRatio.width}/${image.aspectRatio.height}` : undefined,
+        image.aspectRatio
+          ? `aspect-ratio:${image.aspectRatio.width}/${image.aspectRatio.height}`
+          : undefined,
       ].filter((style) => !!style)
       const style = ` style="${styles.join(";")}"`
       if (!src) return `<div class="image-grid-item"${style}></div>`
