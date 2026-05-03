@@ -178,17 +178,35 @@ type ImageLike = {
   aspectRatio?: app.offprint.block.image.AspectRatio
 }
 
+function imageGridAspectRatioStyle(aspectRatio?: "landscape" | "portrait" | "square" | "mosaic") {
+  switch (aspectRatio) {
+    case "landscape":
+      return "aspect-ratio:16/9"
+    case "portrait":
+      return "aspect-ratio:3/4"
+    case "square":
+      return "aspect-ratio:1/1"
+    default:
+      return "aspect-ratio:4/3"
+  }
+}
+
 function renderGridImages(images: ImageLike[], opts: StandardSiteDocumentRendererOptions) {
   const imagePaths: string[] = []
   const html = images
     .map((image) => {
       const src = resolveBlobSrc(getImageBlob(image), opts)
-      const aspectRatio = image.aspectRatio
-        ? ` style="aspect-ratio:${image.aspectRatio.width}/${image.aspectRatio.height}"`
-        : ""
-      if (!src) return `<div class="image-grid-item"${aspectRatio}></div>`
+      const styles = [
+        "display:block",
+        "width:100%",
+        "height:100%",
+        "object-fit:cover",
+        image.aspectRatio ? `aspect-ratio:${image.aspectRatio.width}/${image.aspectRatio.height}` : undefined,
+      ].filter((style) => !!style)
+      const style = ` style="${styles.join(";")}"`
+      if (!src) return `<div class="image-grid-item"${style}></div>`
       imagePaths.push(src)
-      return `<img class="image-grid-item" src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? "")}" loading="lazy"${aspectRatio} />`
+      return `<img class="image-grid-item" src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? "")}" loading="lazy"${style} />`
     })
     .join("")
 
@@ -447,9 +465,10 @@ export const blockImageCarouselRenderer: RendererFunction<
 > = async (entry, opts) => {
   const { html, imagePaths } = renderGridImages(entry.images as ImageLike[], opts)
   const caption = entry.caption ? `<figcaption>${escapeHtml(entry.caption)}</figcaption>` : ""
+  const gridStyle = `display:grid;grid-template-columns:repeat(${Math.min(entry.images.length, 3)}, minmax(0, 1fr));gap:8px`
 
   return {
-    html: `<figure class="image-carousel image-grid"><div class="image-grid-items">${html}</div>${caption}</figure>`,
+    html: `<figure class="image-carousel image-grid"><div class="image-grid-items" style="${gridStyle}">${html}</div>${caption}</figure>`,
     metadata: {
       imagePaths,
     },
@@ -468,9 +487,10 @@ export const blockImageDiffRenderer: RendererFunction<
     entry.alignment === "right" ? "margin-left:auto" : undefined,
   ].filter((style) => !!style)
   const style = styles.length > 0 ? ` style="${styles.join(";")}"` : ""
+  const gridStyle = "display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px"
 
   return {
-    html: `<figure class="image-diff"${style}><div class="image-diff-items">${html}</div>${caption}</figure>`,
+    html: `<figure class="image-diff"${style}><div class="image-diff-items" style="${gridStyle}">${html}</div>${caption}</figure>`,
     metadata: {
       imagePaths,
     },
@@ -483,11 +503,16 @@ export const blockImageGridRenderer: RendererFunction<
 > = async (entry, opts) => {
   const { html, imagePaths } = renderGridImages(entry.images as ImageLike[], opts)
   const caption = entry.caption ? `<figcaption>${escapeHtml(entry.caption)}</figcaption>` : ""
-  const rows = entry.gridRows ? `--grid-rows:${entry.gridRows}` : undefined
-  const style = rows ? ` style="${rows}"` : ""
+  const columns = Math.ceil(entry.images.length / (entry.gridRows ?? 2))
+  const gridStyle = [
+    "display:grid",
+    `grid-template-columns:repeat(${columns}, minmax(0, 1fr))`,
+    "gap:8px",
+    imageGridAspectRatioStyle(entry.aspectRatio),
+  ].join(";")
 
   return {
-    html: `<figure class="image-grid image-grid-${entry.aspectRatio ?? "mosaic"}"${style}><div class="image-grid-items">${html}</div>${caption}</figure>`,
+    html: `<figure class="image-grid image-grid-${entry.aspectRatio ?? "mosaic"}"><div class="image-grid-items" style="${gridStyle}">${html}</div>${caption}</figure>`,
     metadata: {
       imagePaths,
     },
