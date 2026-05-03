@@ -1,5 +1,18 @@
 import type { MarkdownHeading } from "astro"
 
+// Shiki config for code blocks
+export type ShikiConfig = ({ theme?: string } | { themes: { light: string; dark: string } }) & {
+  defaultColor?: false | "light" | "dark" | "light-dark()"
+}
+
+export type BlobResolver = (did: string, cid: string) => string | undefined
+
+export type StandardSiteRenderOpts = {
+  /** Shiki theme configuration for code blocks */
+  shikiConfig?: ShikiConfig
+}
+export type StandardSiteDocumentRendererOptions = RendererFunctionOptions & StandardSiteRenderOpts
+
 // Duplicate from Astro, since it is non-exported.
 export interface RenderedContent {
   /** Rendered HTML string. If present then `render(entry)` will return a component that renders this HTML. */
@@ -16,4 +29,13 @@ export interface RenderedContent {
   }
 }
 
-export type RendererFunction<T> = (data: T) => Promise<RenderedContent | undefined>
+type RendererFunctionOptions = {
+  repoDid: string
+  endpoint?: string
+}
+
+// A function to render a block of content
+export type RendererFunction<T, O extends RendererFunctionOptions = RendererFunctionOptions> = (
+  data: T,
+  opts: O,
+) => Promise<RenderedContent | undefined>

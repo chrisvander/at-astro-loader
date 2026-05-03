@@ -10,7 +10,7 @@ export function utf8ByteToCodeUnitMap(text: string): number[] {
 
   let bytePos = 0
 
-  for (let i = 0; i < text.length;) {
+  for (let i = 0; i < text.length; ) {
     const cp = text.codePointAt(i)!
     const char = String.fromCodePoint(cp)
     const bytes = encoder.encode(char)

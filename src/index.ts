@@ -8,9 +8,11 @@ import {
   type RecordSchema,
   type Validator,
   lexToJson,
+  isHandleIdentifier,
 } from "@atproto/lex"
 import { custom, ZodMiniCustom } from "zod/mini"
 import type { RendererFunction } from "./renderers/types"
+import { com } from "./lexicons"
 
 export * from "./renderers"
 
@@ -123,9 +125,17 @@ export function atLiveLoader<const T extends RecordSchema>(
         ...(filter as ATLoaderEntryFilter<T>),
       })
       if (!cid) return { error: new ATLoaderError(`No CID found for record: ${uri}`) }
+      const data = lexToJson(value) as Infer<T>
+      const rendered = await renderRecord(value as Infer<T>, data, {
+        client,
+        endpoint,
+        renderer: options.renderer,
+        repo: options.repo,
+      })
       return {
         id: cid,
-        data: lexToJson(value) as Infer<T>,
+        data,
+        rendered,
       }
     },
     loadCollection: async ({ filter }) => {
@@ -133,8 +143,22 @@ export function atLiveLoader<const T extends RecordSchema>(
       const { invalid, records } = await client.list(schema, { ...options, ...filter })
       if (invalid.length > 0)
         return { error: new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`) }
+      const entryPromises = records.map(async (r) => {
+        const data = lexToJson(r.value) as Infer<T>
+        const rendered = await renderRecord(r.value as Infer<T>, data, {
+          client,
+          endpoint,
+          renderer: options.renderer,
+          repo: options.repo,
+        })
+        return {
+          data,
+          id: r.cid,
+          rendered,
+        }
+      })
       return {
-        entries: records.map((r) => ({ data: lexToJson(r.value) as Infer<T>, id: r.cid })),
+        entries: await Promise.all(entryPromises),
       }
     },
   }
@@ -144,6 +168,45 @@ type ATLoader<T extends Validator> = {
   name: string
   schema: ZodMiniCustom<Infer<T>, Infer<T>>
   load: (ctx: LoaderContext) => Promise<void>
+}
+
+async function resolveRepoDid(client: Client, repo?: AtIdentifierString): Promise<string> {
+  if (repo && isHandleIdentifier(repo))
+    return await client
+      .call(com.atproto.identity.resolveHandle, {
+        handle: repo,
+      })
+      .then((res) => res.did)
+  if (!repo) throw new Error("No repository resolved.")
+  return repo
+}
+
+async function renderRecord<const T extends RecordSchema>(
+  record: Infer<T>,
+  data: Infer<T>,
+  {
+    client,
+    endpoint,
+    getMarkdown,
+    renderMarkdown,
+    renderer,
+    repo,
+  }: {
+    client: Client
+    endpoint?: string
+    getMarkdown?: (data: Infer<T>) => string
+    renderMarkdown?: LoaderContext["renderMarkdown"]
+    renderer?: RendererFunction<Infer<T>>
+    repo?: AtIdentifierString
+  },
+) {
+  if (renderer)
+    return await renderer(record, {
+      endpoint,
+      repoDid: await resolveRepoDid(client, repo),
+    })
+  if (getMarkdown && renderMarkdown) return await renderMarkdown(getMarkdown(data))
+  return undefined
 }
 
 /**
@@ -185,27 +248,31 @@ export function atLoader<const T extends RecordSchema>(
   return {
     name: `atproto-loader-${schema.$type}`,
     schema: atZodSchema(ns),
-    load: async ({ store, parseData, renderMarkdown, generateDigest }) => {
-      store.clear()
+    load: async (ctx) => {
+      ctx.store.clear()
 
       const client = await getClient(configClient, endpoint)
       const { invalid, records } = await client.list(schema, options)
       if (invalid.length > 0) throw new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`)
 
       for (const record of records) {
-        const data = await parseData<Infer<T>>({
+        const data = await ctx.parseData<Infer<T>>({
           id: record.cid,
           data: lexToJson(record.value) as Infer<T>,
         })
-        store.set({
+        const rendered = await renderRecord(record.value as Infer<T>, data, {
+          client,
+          endpoint,
+          getMarkdown,
+          renderMarkdown: ctx.renderMarkdown,
+          renderer,
+          repo: options.repo,
+        })
+        ctx.store.set({
           id: record.cid,
           data,
-          rendered: renderer
-            ? await renderer(data)
-            : getMarkdown
-              ? await renderMarkdown(getMarkdown(data))
-              : undefined,
-          digest: generateDigest(data),
+          rendered,
+          digest: ctx.generateDigest(data),
         })
       }
     },
