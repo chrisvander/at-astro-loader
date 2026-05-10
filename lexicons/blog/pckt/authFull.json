@@ -1,0 +1,23 @@
+{
+  "id": "blog.pckt.authFull",
+  "defs": {
+    "main": {
+      "type": "permission-set",
+      "title": "pckt.blog",
+      "detail": "Manage your publication, document, and gallery references.",
+      "permissions": [
+        {
+          "type": "permission",
+          "resource": "repo",
+          "collection": [
+            "blog.pckt.publication",
+            "blog.pckt.document",
+            "blog.pckt.gallery"
+          ]
+        }
+      ]
+    }
+  },
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1
+}

@@ -1,0 +1,23 @@
+{
+  "id": "blog.pckt.publication",
+  "defs": {
+    "main": {
+      "key": "tid",
+      "type": "record",
+      "record": {
+        "type": "object",
+        "required": [
+          "publication"
+        ],
+        "properties": {
+          "publication": {
+            "ref": "com.atproto.repo.strongRef",
+            "type": "ref"
+          }
+        }
+      }
+    }
+  },
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1
+}
