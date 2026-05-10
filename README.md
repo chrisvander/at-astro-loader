@@ -80,7 +80,7 @@ export const collections = {
 
 `defineStandardSiteDocumentRenderer(...)` provides a generic renderer entry point for `site.standard.document` records.
 
-Right now, the built-in renderer only supports documents whose `content` is `app.offprint.content`. Other `site.standard.document` content types return no rendered output until support is added.
+Right now, the built-in renderer only supports documents whose `content` is `app.offprint.content`, `blog.pckt.content`, and `pub.leaflet.content`. Other `site.standard.document` content types return no rendered output until support is added.
 
 ```ts
 import { defineCollection } from "astro:content"
