@@ -6,6 +6,8 @@ import type { blog, pub } from "../lexicons"
 /**
  * Renders `site.standard.document` lexicons. Supports:
  * - `app.offprint.content`
+ * - `blog.pckt.content`
+ * - `pub.leaflet.content`
  */
 export function defineStandardSiteDocumentRenderer(
   opts?: StandardSiteRenderOpts,
