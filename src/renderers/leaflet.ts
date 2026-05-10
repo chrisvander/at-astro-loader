@@ -193,9 +193,9 @@ export const linearDocumentRenderer: RendererFunction<
 export const blockTextRenderer: RendererFunction<pub.leaflet.blocks.text.Main> = async (entry) => {
   const sizeClass =
     entry.textSize === "small"
-      ? " class=\"text-small\""
+      ? ' class="text-small"'
       : entry.textSize === "large"
-        ? " class=\"text-large\""
+        ? ' class="text-large"'
         : ""
   return {
     html: `<p${sizeClass}>${renderRichTextHtml(entry.plaintext, entry.facets ?? [])}</p>`,
@@ -224,9 +224,9 @@ export const blockBlockquoteRenderer: RendererFunction<pub.leaflet.blocks.blockq
   metadata: {},
 })
 
-export const blockBskyPostRenderer: RendererFunction<
-  pub.leaflet.blocks.bskyPost.Main
-> = async (entry) => {
+export const blockBskyPostRenderer: RendererFunction<pub.leaflet.blocks.bskyPost.Main> = async (
+  entry,
+) => {
   const uri = entry.postRef.uri
   const href = blueskyPostUrl(uri)
   return {
@@ -261,7 +261,10 @@ export const blockCodeRenderer: RendererFunction<
       themes:
         shikiConfig && "themes" in shikiConfig
           ? { light: shikiConfig.themes.light, dark: shikiConfig.themes.dark }
-          : { light: shikiConfig?.theme ?? "github-light", dark: shikiConfig?.theme ?? "github-dark" },
+          : {
+              light: shikiConfig?.theme ?? "github-light",
+              dark: shikiConfig?.theme ?? "github-dark",
+            },
       defaultColor: opts?.shikiConfig?.defaultColor,
     }),
     metadata: {},
@@ -296,9 +299,7 @@ export const blockImageRenderer: RendererFunction<
   }
 }
 
-export const blockMathRenderer: RendererFunction<pub.leaflet.blocks.math.Main> = async (
-  entry,
-) => ({
+export const blockMathRenderer: RendererFunction<pub.leaflet.blocks.math.Main> = async (entry) => ({
   html: `<link href="https://cdn.jsdelivr.net/npm/katex@0.16.45/dist/katex.min.css" rel="stylesheet">${katex.renderToString(entry.tex, { displayMode: true, throwOnError: false })}`,
   metadata: {},
 })
@@ -334,24 +335,23 @@ function renderLeafletListItems(
 export const blockUnorderedListRenderer: RendererFunction<
   pub.leaflet.blocks.unorderedList.Main
 > = async (entry) => ({
+  html: renderLeafletListItems(entry.children as pub.leaflet.blocks.unorderedList.ListItem[], "ul"),
+  metadata: {},
+})
+
+export const blockOrderedListRenderer: RendererFunction<
+  pub.leaflet.blocks.orderedList.Main
+> = async (entry) => ({
   html: renderLeafletListItems(
     entry.children as pub.leaflet.blocks.unorderedList.ListItem[],
-    "ul",
+    "ol",
+    entry.startIndex,
   ),
   metadata: {},
 })
 
-export const blockOrderedListRenderer: RendererFunction<pub.leaflet.blocks.orderedList.Main> =
-  async (entry) => ({
-    html: renderLeafletListItems(
-      entry.children as pub.leaflet.blocks.unorderedList.ListItem[],
-      "ol",
-      entry.startIndex,
-    ),
-    metadata: {},
-  })
-
-export const blockWebsiteRenderer: RendererFunction<pub.leaflet.blocks.website.Main,
+export const blockWebsiteRenderer: RendererFunction<
+  pub.leaflet.blocks.website.Main,
   StandardSiteDocumentRendererOptions
 > = async (entry, opts) => {
   const title = escapeHtml(entry.title ?? entry.src)
@@ -364,16 +364,12 @@ export const blockWebsiteRenderer: RendererFunction<pub.leaflet.blocks.website.M
   }
 }
 
-export const blockPageRenderer: RendererFunction<pub.leaflet.blocks.page.Main> = async (
-  entry,
-) => ({
+export const blockPageRenderer: RendererFunction<pub.leaflet.blocks.page.Main> = async (entry) => ({
   html: `<a class="page-link" data-page-id="${escapeHtml(entry.id)}">Page: ${escapeHtml(entry.id)}</a>`,
   metadata: {},
 })
 
-export const blockPollRenderer: RendererFunction<pub.leaflet.blocks.poll.Main> = async (
-  entry,
-) => ({
+export const blockPollRenderer: RendererFunction<pub.leaflet.blocks.poll.Main> = async (entry) => ({
   html: `<div class="poll-embed" data-poll-uri="${escapeHtml(entry.pollRef.uri)}"><a href="#poll-${escapeHtml(entry.pollRef.cid ?? "")}">View poll</a></div>`,
   metadata: {},
 })

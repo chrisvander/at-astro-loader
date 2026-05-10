@@ -65,7 +65,9 @@ function applyFacet(html: string, features: Facet["features"]): string {
 function renderRichTextHtml(plaintext: string, facets: Facet[] = []) {
   const splitText = applyFacetsToText(plaintext, splitAndMerge(facets))
   return splitText
-    .map((st) => (st.facet ? applyFacet(escapeHtml(st.text), st.facet.features) : escapeHtml(st.text)))
+    .map((st) =>
+      st.facet ? applyFacet(escapeHtml(st.text), st.facet.features) : escapeHtml(st.text),
+    )
     .join("")
 }
 
@@ -216,12 +218,24 @@ function renderListItemsRecursive(
       const parts: string[] = []
       for (const block of item.content) {
         if (block.$type === "blog.pckt.block.text") {
-          parts.push(renderRichTextHtml((block as blog.pckt.block.text.Main).plaintext, (block as blog.pckt.block.text.Main).facets ?? []))
+          parts.push(
+            renderRichTextHtml(
+              (block as blog.pckt.block.text.Main).plaintext,
+              (block as blog.pckt.block.text.Main).facets ?? [],
+            ),
+          )
         } else if (block.$type === "blog.pckt.block.bulletList") {
-          parts.push(renderListItemsRecursive((block as blog.pckt.block.bulletList.Main).content as blog.pckt.block.listItem.Main[], "ul"))
+          parts.push(
+            renderListItemsRecursive(
+              (block as blog.pckt.block.bulletList.Main).content as blog.pckt.block.listItem.Main[],
+              "ul",
+            ),
+          )
         } else if (block.$type === "blog.pckt.block.orderedList") {
           const ol = block as blog.pckt.block.orderedList.Main
-          parts.push(renderListItemsRecursive(ol.content as blog.pckt.block.listItem.Main[], "ol", ol.start))
+          parts.push(
+            renderListItemsRecursive(ol.content as blog.pckt.block.listItem.Main[], "ol", ol.start),
+          )
         }
       }
       return `<li>${parts.join("")}</li>`
@@ -241,7 +255,11 @@ export const blockBulletListRenderer: RendererFunction<blog.pckt.block.bulletLis
 export const blockOrderedListRenderer: RendererFunction<blog.pckt.block.orderedList.Main> = async (
   entry,
 ) => ({
-  html: renderListItemsRecursive(entry.content as blog.pckt.block.listItem.Main[], "ol", entry.start),
+  html: renderListItemsRecursive(
+    entry.content as blog.pckt.block.listItem.Main[],
+    "ol",
+    entry.start,
+  ),
   metadata: {},
 })
 
@@ -253,7 +271,12 @@ export const blockTaskListRenderer: RendererFunction<blog.pckt.block.taskList.Ma
       const checked = item.checked ? " checked" : ""
       const content = item.content
         .filter((b) => b.$type === "blog.pckt.block.text")
-        .map((b) => renderRichTextHtml((b as blog.pckt.block.text.Main).plaintext, (b as blog.pckt.block.text.Main).facets ?? []))
+        .map((b) =>
+          renderRichTextHtml(
+            (b as blog.pckt.block.text.Main).plaintext,
+            (b as blog.pckt.block.text.Main).facets ?? [],
+          ),
+        )
         .join("")
       return `<li class="task-list-item" style="margin-left:-24px;display:flex;gap:12px"><input type="checkbox" disabled${checked} />${content}</li>`
     })
@@ -283,7 +306,10 @@ export const blockCodeBlockRenderer: RendererFunction<
       themes:
         shikiConfig && "themes" in shikiConfig
           ? { light: shikiConfig.themes.light, dark: shikiConfig.themes.dark }
-          : { light: shikiConfig?.theme ?? "github-light", dark: shikiConfig?.theme ?? "github-dark" },
+          : {
+              light: shikiConfig?.theme ?? "github-light",
+              dark: shikiConfig?.theme ?? "github-dark",
+            },
       defaultColor: opts?.shikiConfig?.defaultColor,
     }),
     metadata: {},
@@ -295,11 +321,7 @@ export const blockImageRenderer: RendererFunction<
   StandardSiteDocumentRendererOptions
 > = async (entry, opts) => {
   const { attrs } = entry
-  const src = attrs.blob
-    ? resolveBlobSrc(attrs.blob, opts)
-    : attrs.src
-      ? attrs.src
-      : undefined
+  const src = attrs.blob ? resolveBlobSrc(attrs.blob, opts) : attrs.src ? attrs.src : undefined
 
   const alignStyle =
     attrs.align === "center"
@@ -342,9 +364,9 @@ export const blockIframeRenderer: RendererFunction<
   }
 }
 
-export const blockWebsiteRenderer: RendererFunction<
-  blog.pckt.block.website.Main
-> = async (entry) => {
+export const blockWebsiteRenderer: RendererFunction<blog.pckt.block.website.Main> = async (
+  entry,
+) => {
   const title = escapeHtml(entry.title ?? entry.src)
   const description = entry.description ? `<p>${escapeHtml(entry.description)}</p>` : ""
   const preview = entry.previewImage
@@ -369,7 +391,9 @@ export const blockTableRenderer: RendererFunction<
 > = async (entry, _opts) => {
   const rows = (entry.content as blog.pckt.block.tableRow.Main[])
     .map((row) => {
-      const cells = (row.content as (blog.pckt.block.tableCell.Main | blog.pckt.block.tableHeader.Main)[])
+      const cells = (
+        row.content as (blog.pckt.block.tableCell.Main | blog.pckt.block.tableHeader.Main)[]
+      )
         .map((cell) => {
           const isHeader = cell.$type === "blog.pckt.block.tableHeader"
           const tag = isHeader ? "th" : "td"
@@ -377,7 +401,12 @@ export const blockTableRenderer: RendererFunction<
           const rowspan = "rowspan" in cell && cell.rowspan ? ` rowspan="${cell.rowspan}"` : ""
           const content = cell.content
             .filter((b) => b.$type === "blog.pckt.block.text")
-            .map((b) => renderRichTextHtml((b as blog.pckt.block.text.Main).plaintext, (b as blog.pckt.block.text.Main).facets ?? []))
+            .map((b) =>
+              renderRichTextHtml(
+                (b as blog.pckt.block.text.Main).plaintext,
+                (b as blog.pckt.block.text.Main).facets ?? [],
+              ),
+            )
             .join("")
           return `<${tag}${colspan}${rowspan}>${content}</${tag}>`
         })
