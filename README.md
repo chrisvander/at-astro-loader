@@ -1,3 +1,5 @@
+
+
 # at-astro-loader
 
 [![NPM Package][npm-img]][npm-url]
@@ -26,6 +28,8 @@ pnpm add at-astro-loader
 # or
 bun add at-astro-loader
 ```
+
+The package also requires the peer dependency `@atproto/lex`.
 
 ## Generate Lexicons
 
