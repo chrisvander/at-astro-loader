@@ -199,8 +199,6 @@ This supports both direct exports and namespace module patterns from generated l
 
 [build-img]: https://github.com/chrisvander/at-astro-loader/actions/workflows/release.yml/badge.svg
 [build-url]: https://github.com/chrisvander/at-astro-loader/actions/workflows/release.yml
-[size-img]: https://img.shields.io/bundlephobia/minzip/at-astro-loader
-[size-url]: https://bundlephobia.com/package/at-astro-loader
 [downloads-img]: https://img.shields.io/npm/dt/at-astro-loader
 [downloads-url]: https://www.npmtrends.com/at-astro-loader
 [npm-img]: https://img.shields.io/npm/v/at-astro-loader
