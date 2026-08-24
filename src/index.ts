@@ -140,9 +140,7 @@ export function atLiveLoader<const T extends RecordSchema>(
     },
     loadCollection: async ({ filter }) => {
       const client = await getClient(configClient, endpoint)
-      const { invalid, records } = await client.list(schema, { ...options, ...filter })
-      if (invalid.length > 0)
-        return { error: new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`) }
+      const { records } = await client.list(schema, { ...options, ...filter })
       const entryPromises = records.map(async (r) => {
         const data = lexToJson(r.value) as Infer<T>
         const rendered = await renderRecord(r.value as Infer<T>, data, {
@@ -252,9 +250,7 @@ export function atLoader<const T extends RecordSchema>(
       ctx.store.clear()
 
       const client = await getClient(configClient, endpoint)
-      const { invalid, records } = await client.list(schema, options)
-      if (invalid.length > 0) throw new ATLoaderError(`Invalid records: ${JSON.stringify(invalid)}`)
-
+      const { records } = await client.list(schema, options)
       for (const record of records) {
         const data = await ctx.parseData<Infer<T>>({
           id: record.cid,
@@ -264,7 +260,7 @@ export function atLoader<const T extends RecordSchema>(
           client,
           endpoint,
           getMarkdown,
-          renderMarkdown: ctx.renderMarkdown,
+          renderMarkdown: ctx.renderMarkdown.bind(ctx),
           renderer,
           repo: options.repo,
         })
